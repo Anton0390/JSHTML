@@ -19,6 +19,7 @@ function tableCreate(thead, tbody) {
             thead.forEach(cell => {
                 let th = document.createElement('th');
                 th.style.background = '#b2b0b0'
+                th.style['text-align'] = 'center';
                 th.appendChild(document.createTextNode(cell))
                 tr.appendChild(th)
                 tbhd.appendChild(tr);

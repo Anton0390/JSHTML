@@ -26,7 +26,7 @@ function tableCreate(thead, tbody) {
             })
             tbl.appendChild(tbhd);
 
-            //tbody
+            //tbody 
 
             tbody.forEach(row => {
                 let tr = document.createElement('tr');

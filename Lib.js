@@ -40,7 +40,7 @@ function tableCreate(thead, tbody) {
             })
             tbl.appendChild(tbdy);
             body.replaceChild(tbl, body.childNodes[body.childNodes.length - 1]);
-        }
+        } 
 
 /**
  * return the number rounded to the places.

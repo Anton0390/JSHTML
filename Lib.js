@@ -1,41 +1,51 @@
-function tableCreate(thead, tbody, replaceChild) {
-  if (!thead) thead = ['test', 'test']
-  if (!tbody) thead = [
-    ['test', 'test'],
-    ['test', 'test']
-  ]
-  let body = document.getElementsByTagName('body')[0];
-  let tbl = document.createElement('table');
+/**
+ * Create or refresh the table.
+ *
+ * @param {Array} thead The head of the table.
+ * @param {Array<Array>} tbody The body of the table.
+ * @param {String} tableId Set Id of the table.
+ * @param {HTMLelement} body HTML Element to append/replace the table.
+ * @return The HTML table.
+ */
+function tableCreate(thead, tbody, tableId, body) {
+  
+  let tbl = document.createElement("table");
+  tbl.setAttribute("id", tableId.toString());
 
-  let tbdy = document.createElement('tbody');
-  let tbhd = document.createElement('thead');
-  let tr = document.createElement('tr');
+  let tbdy = document.createElement("tbody");
+  let tbhd = document.createElement("thead");
+  let tr = document.createElement("tr");
 
   //header
 
-  thead.forEach(cell => {
-    let th = document.createElement('th');
-
-    th.appendChild(document.createTextNode(cell))
-    tr.appendChild(th)
+  thead.forEach((cell) => {
+    let th = document.createElement("th");
+    th.appendChild(document.createTextNode(cell));
+    tr.appendChild(th);
     tbhd.appendChild(tr);
-  })
+  });
   tbl.appendChild(tbhd);
 
-  //tbody 
+  //tbody
 
-  tbody.forEach(row => {
-    let tr = document.createElement('tr');
-    row.forEach(cell => {
-      let td = document.createElement('td');
-      td.appendChild(document.createTextNode(cell))
-      tr.appendChild(td)
-    })
+  tbody.forEach((row) => {
+    let tr = document.createElement("tr");
+    row.forEach((cell) => {
+      let td = document.createElement("td");
+      td.appendChild(document.createTextNode(cell));
+      tr.appendChild(td);
+    });
     tbdy.appendChild(tr);
-  })
+  });
   tbl.appendChild(tbdy);
-  if (replaceChild) body.replaceChild(tbl, body.childNodes[body.childNodes.length - 1]);
-  if (!replaceChild) body.appendChild(tbl)
+
+  let tablePos;
+  Array.prototype.slice.call(body[0].childNodes).forEach((el, i) => {
+    if (el.id == tableId) tablePos = i;
+  });
+  tablePos
+    ? body[0].replaceChild(tbl, body[0].childNodes[tablePos])
+    : body[0].appendChild(tbl);
 } 
 
 /**

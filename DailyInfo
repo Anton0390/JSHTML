@@ -1,0 +1,184 @@
+let dataDate, dataTable/* , dateInp */
+  let main = document.getElementById('main')
+  let body = document.getElementsByTagName('body')/* [0] */;
+  let dateInp = document.getElementById('date')
+  let span = document.getElementsByTagName('span')[0];
+
+  $(document).ready(function () {
+        $('.datepicker').datepicker({
+            format: 'dd-mm-yyyy',
+            /* onSelect: function() {
+              alert(this.toString());
+            }, */
+        });
+        afterSidebarLoad()
+    });  
+
+  let run = function (callback,script) {
+    return google.script.run.withSuccessHandler(callback)[script]()
+  }
+
+  function afterSidebarLoad() {
+    let callback = dataReturned => dataDate = dataReturned
+    run(callback, 'getData')
+    //google.script.run.withSuccessHandler(callback).getData()
+  } 
+
+  $('#date').click(function(){
+    google.script.host.setHeight(420);
+  })
+
+  $('#date').change(function () {
+        let dateI = {}
+        let inpDate = this.value.split('-')
+        dateI.d = inpDate[0]
+        dateI.m = inpDate[1]
+        dateI.y = inpDate[2].replace('20', '')
+
+        if (!dataDate) throw new Error('Не получен массив dataDate из getData()')
+        let filtred = dataDate.filter(a => a && getDate(a) && getDate(a).d == dateI.d && getDate(a).m == dateI.m && getDate(a).y == dateI.y)
+       
+        let tableRM = document.getElementById('rm')
+        let tablePR = document.getElementById('prdct')
+
+        if (filtred.length === 0) {
+            if (tableRM) tableRM.style.display = 'none'
+            if (tablePR) tablePR.style.display = 'none'
+
+            span.innerText = `Нет данных о плавках в эту дату`
+
+            google.script.host.setHeight(document.body.scrollHeight+30);
+
+        } else {
+
+            span.classList.add('text-focus-in')
+            span.innerText = `Загрузка данных ...`
+
+            if (tableRM) tableRM.style.display = 'none'
+            if (tablePR) tablePR.style.display = 'none'
+            dateInp.setAttribute('disabled', '')
+
+            let inputCalDate = filtred.map(a => /^\d{4}/g.exec(a)[0])
+
+            google.script.run.withSuccessHandler(function (dataReturned) {
+                let [head, ...rest] = dataReturned.rawMat
+                let chosen = head[1]
+
+                span.classList.remove('text-focus-in')
+                span.innerText = chosen.length > 4 ? `Плавки № ${chosen}` : `Плавка № ${chosen}`
+
+                head = ['Тип сырья', 'Масса W, кг']
+
+                tableCreate(head, rest, 'rm', body)
+                tableCreate(['1сорт', '2сорт+Ликв', 'Отсев', 'Шлак', 'Пыль'], dataReturned.products, 'prdct', body)
+
+                dateInp.removeAttribute('disabled')
+                
+                google.script.host.setHeight(document.body.scrollHeight+30);
+
+            }).dataDaily(inputCalDate)
+        }
+        
+    })
+
+  function getDate(str) {
+
+    const dateReg = /\d{1,2}.\d{1,2}.\d{2,4}/i
+    let date = {}
+    if (/^\d{4}\//i.exec(str) && dateReg.exec(str)) {
+      let dateStr = dateReg.exec(str.toString().replace(/^\d{4}\//i, '&').replace(/[/,\s]/i, '.'))[0]
+      date.d = +/^(\d+)[\.\/]/g.exec(dateStr)[1]
+      date.m = +/[\.\/](\d+)[\.\/]/g.exec(dateStr)[1]
+      date.y = +/[\.\/](\d+)$/g.exec(dateStr)[1].replace('20', '')
+      return date
+    } else return
+  }
+  
+  /* (function dateIn() {
+    dateInp = document.createElement("INPUT");
+    dateInpLab = document.createElement("label");
+    dateInp.setAttribute("type", "text")
+    dateInp.setAttribute('id', 'date')
+    //dateInp.setAttribute('placeholder', 'Выбери дату...')
+    dateInp.setAttribute('class', 'datepicker')
+    //dateInp.setAttribute('onfocus', "(this.type='date')")
+    //dateInp.setAttribute('onblur', "this.type='text'")
+    //dateInp.style['margin'] = '0.5rem'
+    dateInpLab.setAttribute('for', 'date')
+    dateInpLab.textContent = 'Выбери дату...'
+
+    let span = document.createElement("span");
+
+    main.appendChild(dateInp);
+    main.appendChild(dateInpLab);
+    main.appendChild(span);
+
+    dateInp.addEventListener('input', getInpDate)
+  })() */
+
+  /* (function dateIn() {
+    dateInp = document.createElement("INPUT");
+    dateInp.setAttribute("type", "text")
+    dateInp.setAttribute('id', 'date')
+    dateInp.setAttribute('placeholder', 'Выбери дату...')
+    dateInp.setAttribute('onfocus', "this.type='date'")
+    dateInp.setAttribute('onblur', "(this.value == '' ? this.type='text' : this.type='date')")
+
+    let span = document.createElement("span");
+
+    main.appendChild(dateInp);
+    body[0].appendChild(span);
+
+    dateInp.addEventListener('input', getInpDate)
+  })()
+
+  function getInpDate() {
+
+    let dateInp = document.getElementById('date')
+    
+    date.y = +dateInp.valueAsDate.getFullYear().toString().replace('20', '')
+    date.m = dateInp.valueAsDate.getMonth() + 1
+    date.d = dateInp.valueAsDate.getUTCDate()
+
+    if (!dataDate) throw new Error('Не получен массив dataDate из getData()')
+    let filtred = dataDate.filter(a => a && getDate(a) && getDate(a).d === date.d && getDate(a).m === date.m && getDate(a).y === date.y)
+    
+    let span = document.getElementsByTagName('span')[0];
+    let tableRM = document.getElementById('rm')
+    let tablePR = document.getElementById('prdct')
+
+    if (filtred.length === 0) {
+
+      if (tableRM) tableRM.style.display = 'none'
+      if (tablePR) tablePR.style.display = 'none'
+
+      span.innerText = `Нет данных о плавках в эту дату`
+
+    } else {
+
+      span.classList.add('text-focus-in')
+      span.innerText = `Загрузка данных ...`
+
+      if (tableRM) tableRM.style.display = 'none'
+      if (tablePR) tablePR.style.display = 'none'
+      dateInp.setAttribute('disabled', '')
+
+      let inputCalDate = filtred.map(a => /^\d{4}/g.exec(a)[0])
+
+      google.script.run.withSuccessHandler(function (dataReturned) {
+        let [head, ...rest] = dataReturned.rawMat
+        let chosen = head[1]
+
+        span.classList.remove('text-focus-in')
+        span.innerText = chosen.length > 4 ? `Плавки № ${chosen} ` : `Плавка № ${chosen} плавилась`
+
+        head = ['Тип сырья', 'Масса W, кг']
+
+        tableCreate(head, rest, 'rm', body)
+        tableCreate(['1сорт', '2сорт+Ликв', 'Отсев', 'Шлак', 'Пыль'], dataReturned.products, 'prdct', body)
+
+        dateInp.removeAttribute('disabled')
+
+      }).dataDaily(inputCalDate)
+    }
+  } */

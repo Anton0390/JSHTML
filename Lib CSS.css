@@ -1,0 +1,24 @@
+table.AStable>tbody>tr:hover {
+      background: #B00020;
+      color: white;
+    }
+
+    table.AStable thead tr {
+      background: #8a8888;
+    }
+
+    table.AStable {
+      width: 100%;
+      border: 1px solid;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      cursor: default;
+    }
+
+    table.AStable th,
+    table.AStable td {
+      border: 1px solid;
+      text-align: center;
+      width: 20%;
+      padding: 1px;
+    }
